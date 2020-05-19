@@ -12,14 +12,23 @@
   <style>
     .video {
       position: relative;
+      width: 640px;
+      height: 480px;
+      transform: scale(0.5);
 /*       margin: 100px auto; */
     }
 
-/*     video {
-      width: 100%;
+    video {
       height: 100%;
       object-fit: fill;
-    } */
+    }
+
+    #snap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: none;
+    }
 
     #overlay {
       position: absolute;
@@ -32,22 +41,30 @@
 <body>
   <div>
     <div class='video'>
-      <video onloadedmetadata="onPlay(this)" id="inputVideo" autoplay="" muted=""
+      <video 
+        onloadedmetadata="onPlay(this)" 
+        id="inputVideo" 
+        autoplay="" 
+        muted=""
         playsinline="">
       </video>
-      <div class="qr-scanner">
-        <div class="box">
-          <div class="line"></div>
-          <div class="angle"></div>
-        </div>
-      </div>
-      <canvas id="overlay" width="300" height="300">
-      </canvas>
+      <canvas id="overlay"></canvas>
+      <canvas id='snap' width="640" height="480"></canvas>
     </div>
   </div>
   <script>
     let forwardTimes = []
     let withBoxes = true
+    let scores = []
+
+    function avg(array) {//封装求平均值函数
+        var len = array.length;
+        var sum = 0;
+        for(var i = 0;i<len;i++){
+            sum +=array[i];
+        }
+        return sum/len;
+    }
 
     async function onPlay() {
       const videoEl = $('#inputVideo').get(0)
@@ -56,7 +73,7 @@
       const options = getFaceDetectorOptions()
       const ts = Date.now()
       const result = await faceapi.detectSingleFace(videoEl, options).withFaceLandmarks()
-
+      console.log(result)
       if (result) {
         const canvas = $('#overlay').get(0)
         const dims = faceapi.matchDimensions(canvas, videoEl, true)
@@ -67,7 +84,20 @@
         faceapi.draw.drawFaceLandmarks(canvas, resizedResult)
       }
 
-      setTimeout(() => onPlay(), 100)
+      if (result) {
+        scores.push(result.alignedRect.score)
+        if (scores.length>10) {
+          scores.shift()
+        }
+      }
+
+      if(result && scores.length == 10 && avg(scores) > 0.85 && result.alignedRect.score>0.95) {
+        let snapConvas = document.getElementById('snap')      
+        snapConvas.getContext("2d").drawImage(videoEl, 0, 0, snapConvas.width, snapConvas.height)
+        $(snapConvas).show()
+      } else {
+        setTimeout(() => onPlay(), 200)
+      }
     }
 
     async function run() {
