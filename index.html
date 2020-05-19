@@ -1,226 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <!-- bootstrap的css文件 -->
-    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
-    <!-- 引入jquery -->
-    <script src="./js/jquery-3.1.1.min.js"></script>
-    <!-- 引入bootstrap的js文件 -->
-    <script src="./bootstrap/js/bootstrap.min.js"></script>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <script src="./src/face-api.js"></script>
+  <script src="./src/faceDetectionControls.js"></script>
+  <script type="text/javascript" src="./src/jquery-2.1.1.min.js"></script>
+  <script src="./src/materialize.min.js"></script>
+  <!-- <link rel="stylesheet" href="./src/materialize.css"> -->
 
-    <title>bootstrapr模板</title>
+  <style>
+    .video {
+      position: relative;
+      height: 480px;
+      width: 640px;
+      margin: 100px auto;
+      transform: scale(0.5);
+    }
 
-    <style>
-        .right ul {
-            padding: 0;
-            margin: 0;
-        }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+    }
 
-        .right ul a {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            align-items: center;
-        }
-
-        .right h2 {
-            border-bottom: 1px solid #ccc;
-            padding: 10px 0px;
-        }
-    </style>
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  </style>
 </head>
 
 <body>
-
-    <nav class="navbar navbar-inverse">
-        <div class="container-fluid">
-            <!-- 放logo和手机端导航按钮的 -->
-            <div class="navbar-header">
-                <!-- 手机端的导航按钮 -->
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
-                    aria-expanded="false">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-
-                <!-- 商标， 一般用来放logo -->
-                <a class="navbar-brand" href="#">我的LOGO</a>
-            </div>
-
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-
-                <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a href="#">频道1</a>
-                    </li>
-                    <li>
-                        <a href="#">频道2</a>
-                    </li>
-                    <li>
-                        <a href="#">频道3</a>
-                    </li>
-                    <li>
-                        <a href="#">频道4</a>
-                    </li>
-                </ul>
-
-                <!-- 是可以删除的, 内联的表单 navbar-left: 元素左浮 -->
-                <form class="navbar-form navbar-right">
-                    <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search">
-                    </div>
-                </form>
-
-
-            </div>
+  <div>
+    <div class='video'>
+      <video width="300" height="300" onloadedmetadata="onPlay(this)" id="inputVideo" autoplay="" muted=""
+        playsinline="">
+      </video>
+      <div class="qr-scanner">
+        <div class="box">
+          <div class="line"></div>
+          <div class="angle"></div>
         </div>
-    </nav>
+      </div>
+      <canvas id="overlay" width="300" height="300">
+      </canvas>
+    </div>
+  </div>
+  <script>
+    let forwardTimes = []
+    let withBoxes = true
 
-    <main class="container-fluid">
-        <div class="list-group col-sm-2 hidden-xs">
-            <a href="#" class="list-group-item active">
-                左侧导航1
-            </a>
-            <a href="" class="list-group-item">左侧导航1</a>
-            <a href="" class="list-group-item">左侧导航2</a>
-            <a href="" class="list-group-item">左侧导航3</a>
-            <a href="" class="list-group-item">左侧导航4</a>
-            <a href="" class="list-group-item">左侧导航5</a>
-            <a href="" class="list-group-item">左侧导航6</a>
-            <a href="" class="list-group-item">左侧导航7</a>
-            <a href="" class="list-group-item">左侧导航8</a>
-            <a href="" class="list-group-item">左侧导航9</a>
-            <a href="" class="list-group-item">左侧导航10</a>
-        </div>
+    async function onPlay() {
+      const videoEl = $('#inputVideo').get(0)
+      if (videoEl.paused || videoEl.ended || !isFaceDetectionModelLoaded())
+        return setTimeout(() => onPlay())
+      const options = getFaceDetectorOptions()
+      const ts = Date.now()
+      const result = await faceapi.detectSingleFace(videoEl, options).withFaceLandmarks()
 
-        <div class="right col-sm-10">
-            <h2>商品</h2>
-            <ul class="list-unstyled">
-                <li class="col-sm-3 col-xs-6">
-                    <a href="">
-                        <img src="./img/16.jpg" class="img-circle img-thumbnail" alt="">
-                        <p>标题</p>
-                        <p>副标题</p>
-                    </a>
-                </li>
+      if (result) {
+        const canvas = $('#overlay').get(0)
+        const dims = faceapi.matchDimensions(canvas, videoEl, true)
+        const resizedResult = faceapi.resizeResults(result, dims)
+        if (withBoxes) {
+          faceapi.draw.drawDetections(canvas, resizedResult)
+        }
+        faceapi.draw.drawFaceLandmarks(canvas, resizedResult)
+      }
 
-                <li class="col-sm-3  col-xs-6">
-                    <a href="">
-                        <img src="./img/17.jpg" class="img-circle img-thumbnail" alt="">
-                        <p>标题</p>
-                        <p>副标题</p>
-                    </a>
-                </li>
+      setTimeout(() => onPlay(), 100)
+    }
 
-                <li class="col-sm-3  col-xs-6">
-                    <a href="">
-                        <img src="./img/18.jpg" class="img-circle img-thumbnail" alt="">
-                        <p>标题</p>
-                        <p>副标题</p>
-                    </a>
-                </li>
+    async function run() {
+      await changeFaceDetector()
+      await faceapi.loadFaceLandmarkModel('/model/')
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {}
+      })
+      const videoEl = $('#inputVideo').get(0)
+      videoEl.srcObject = stream
+    }
 
-                <li class="col-sm-3 col-xs-6">
-                    <a href="">
-                        <img src="./img/19.jpg" class="img-circle img-thumbnail" alt="">
-                        <p>标题</p>
-                        <p>副标题</p>
-                    </a>
-                </li>
-            </ul>
-
-            <h2>表格</h2>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>id</th>
-                            <th>姓名</th>
-                            <th>年龄</th>
-                            <th>性别</th>
-                            <th>爱好</th>
-                            <th>是否有女朋友</th>
-                        </tr>
-                    </thead>
-                    <tr>
-                        <td>100</td>
-                        <td>小明</td>
-                        <td>22</td>
-                        <td>男</td>
-                        <td>女</td>
-                        <td>无</td>
-                    </tr>
-                    <tr>
-                        <td>100</td>
-                        <td>小明</td>
-                        <td>22</td>
-                        <td>男</td>
-                        <td>女</td>
-                        <td>无</td>
-                    </tr>
-                    <tr>
-                        <td>100</td>
-                        <td>小明</td>
-                        <td>22</td>
-                        <td>男</td>
-                        <td>女</td>
-                        <td>无</td>
-                    </tr>
-                    <tr>
-                        <td>100</td>
-                        <td>小明</td>
-                        <td>22</td>
-                        <td>男</td>
-                        <td>女</td>
-                        <td>无</td>
-                    </tr>
-                    <tr>
-                        <td>100</td>
-                        <td>小明</td>
-                        <td>22</td>
-                        <td>男</td>
-                        <td>女</td>
-                        <td>无</td>
-                    </tr>
-                    <tr>
-                        <td>100</td>
-                        <td>小明</td>
-                        <td>22</td>
-                        <td>男</td>
-                        <td>女</td>
-                        <td>无</td>
-                    </tr>
-                    <tr>
-                        <td>100</td>
-                        <td>小明</td>
-                        <td>22</td>
-                        <td>男</td>
-                        <td>女</td>
-                        <td>无</td>
-                    </tr>
-                    <tr>
-                        <td>100</td>
-                        <td>小明</td>
-                        <td>22</td>
-                        <td>男</td>
-                        <td>女</td>
-                        <td>无</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-
-
-
-
-    </main>
-
+    $(document).ready(function () {
+      run()
+    })
+  </script>
 </body>
 
 </html>
