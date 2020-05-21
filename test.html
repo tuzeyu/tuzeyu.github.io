@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  </head>
+  <body>
+    <div id="app">
+                <video 
+            id = 'video'           
+            autoplay="" 
+            muted=""
+            playsinline="">
+        </video>
+    </div>
+    <script>
+     function testVideo() {
+       let video = document.getElementById('video');
+       let constraints = {
+           video: {},
+       };
+
+       if (navigator.mediaDevices === undefined) {
+           navigator.mediaDevices = {};
+       }
+       if (navigator.mediaDevices != undefined && navigator.mediaDevices.getUserMedia != undefined) { // 标准的API
+           navigator.mediaDevices.getUserMedia(constraints).then(stream => {
+               video.srcObject = stream;
+           });
+       } else if (navigator.webkitGetUserMedia != undefined) { // WebKit 核心的API
+           navigator.webkitGetUserMedia(constraints, stream => {
+               alert('haha')
+               video.src = window.webkitURL.createObjectURL(stream);
+           }, err => {
+               alert("kitErr: " + err.message);
+           });
+       } else {
+           alert("defaultErr: " + err.message);
+       }
+     }
+
+     testVideo()
+    </script>
+  
+  </body>
+</html>
