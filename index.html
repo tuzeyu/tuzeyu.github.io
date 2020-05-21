@@ -7,7 +7,12 @@
   </head>
   <body>
     <div id="app">
-        <video id = 'video'></video>
+                <video 
+            id = 'video'           
+            autoplay="" 
+            muted=""
+            playsinline="">
+        </video>
     </div>
     <script>
      function testVideo() {
@@ -22,12 +27,7 @@
        }
        if (navigator.mediaDevices != undefined && navigator.mediaDevices.getUserMedia != undefined) { // 标准的API
            navigator.mediaDevices.getUserMedia(constraints).then(stream => {
-               alert('hehe')
                video.srcObject = stream;
-               video.onloadedmetadata = (e) => {
-                   video.play();
-               }
-             
            });
        } else if (navigator.webkitGetUserMedia != undefined) { // WebKit 核心的API
            navigator.webkitGetUserMedia(constraints, stream => {
