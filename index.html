@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <title><%= htmlWebpackPlugin.options.title %></title>
+    <script>
+     function testVideo() {
+       let div = document.createElement("div");
+       div.innerHTML = "<video id = 'video'></video>";
+       document.body.appendChild(div)
+       let video = document.getElementById('video');
+       let constraints = {
+           video: { width: 640, height: 480 },
+           audio: false
+       };
+
+       if (navigator.mediaDevices === undefined) {
+           navigator.mediaDevices = {};
+       }
+       if (navigator.mediaDevices != undefined && navigator.mediaDevices.getUserMedia != undefined) { // 标准的API
+           navigator.mediaDevices.getUserMedia(constraints).then(stream => {
+               video.srcObject = stream;
+               video.onloadedmetadata = (e) => {
+                   video.play();
+               }
+           });
+       } else if (navigator.webkitGetUserMedia != undefined) { // WebKit 核心的API
+           navigator.webkitGetUserMedia(constraints, stream => {
+               video.src = window.webkitURL.createObjectURL(stream);
+               video.play();
+           }, err => {
+               alert("kitErr: " + err.message);
+           });
+       } else {
+           alert("defaultErr: " + err.message);
+       }
+     }
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      
+    </div>
+  </body>
+</html>
