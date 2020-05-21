@@ -22,15 +22,13 @@
        }
        if (navigator.mediaDevices != undefined && navigator.mediaDevices.getUserMedia != undefined) { // 标准的API
            navigator.mediaDevices.getUserMedia(constraints).then(stream => {
+               alert('hehe')
                video.srcObject = stream;
-               video.onloadedmetadata = (e) => {
-                   video.play();
-               }
            });
        } else if (navigator.webkitGetUserMedia != undefined) { // WebKit 核心的API
            navigator.webkitGetUserMedia(constraints, stream => {
+               alert('haha')
                video.src = window.webkitURL.createObjectURL(stream);
-               video.play();
            }, err => {
                alert("kitErr: " + err.message);
            });
