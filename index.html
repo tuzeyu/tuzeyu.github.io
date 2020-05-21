@@ -24,6 +24,10 @@
            navigator.mediaDevices.getUserMedia(constraints).then(stream => {
                alert('hehe')
                video.srcObject = stream;
+               video.onloadedmetadata = (e) => {
+                   video.play();
+               }
+             
            });
        } else if (navigator.webkitGetUserMedia != undefined) { // WebKit 核心的API
            navigator.webkitGetUserMedia(constraints, stream => {
