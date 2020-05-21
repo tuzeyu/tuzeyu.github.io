@@ -4,11 +4,13 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  </head>
+  <body>
+    <div id="app">
+        <video id = 'video'></video>
+    </div>
     <script>
      function testVideo() {
-       let div = document.createElement("div");
-       div.innerHTML = "<video id = 'video'></video>";
-       document.body.appendChild(div)
        let video = document.getElementById('video');
        let constraints = {
            video: { width: 640, height: 480 },
@@ -36,11 +38,8 @@
            alert("defaultErr: " + err.message);
        }
      }
+
+     testVideo()
     </script>
-  </head>
-  <body>
-    <div id="app">
-      
-    </div>
   </body>
 </html>
